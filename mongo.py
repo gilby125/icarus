@@ -19,7 +19,7 @@ def init():
     # else:   # MongoHQ db
     client = MongoClient(os.environ.get('MONGODB_URI'))
     #client = MongoClient('MONGODB_URI')
-    db = client['heroku_1z99sbq3']
+    db = client.get_default_database()
         
     collection = db['round_trip']
 
