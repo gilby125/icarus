@@ -17,7 +17,8 @@ def init():
     #     client = MongoClient('localhost:27017')
     #     db = client['icarus']
     # else:   # MongoHQ db
-    client = MongoClient('MONGODB_URI')
+    client = MongoClient(os.environ.get('MONGODB_URI'))
+    #client = MongoClient('MONGODB_URI')
     db = client['icarus']
         
     collection = db['round_trip']
