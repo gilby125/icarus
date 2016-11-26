@@ -10,7 +10,6 @@ from datetime import datetime, timedelta
 import calendar
 import re
 
-# GRAPH_PATH = '/html/body/div[3]/div/div/div[3]/div[2]'
 GRAPH_PATH = "//div[@class='EESPNGB-bb-s EESPNGB-bb-b']"
 driver = None
 
@@ -20,12 +19,12 @@ def init():
 	if 'DYNO' in os.environ:
 		print '===============Heroku detected==============='
 		driver = webdriver.PhantomJS(executable_path='bin/phantomjs')
-		# driver = webdriver.Chrome(executable_path='bin/chromedriver')
+	# driver = webdriver.Chrome(executable_path='bin/chromedriver')
 	elif os.environ.get('OS', '') == 'Windows_NT':
 		driver = webdriver.Chrome(executable_path='C:/chromedriver/chromedriver.exe')
 	else:
 		driver = webdriver.Chrome(executable_path='drivers/chromedriver')
-		# driver = webdriver.PhantomJS(executable_path='drivers/phantomjs')
+	# driver = webdriver.PhantomJS(executable_path='drivers/phantomjs')
 
 
 def fetch_all_data(f, t, days):
@@ -83,12 +82,12 @@ def fetch_data(graph, data, f, t):
 		hov.perform()
 
 		date = get_date(graph)
-		timeout = 20
+		timeout = 45
 		while date == 'Loading...':  ## TODO: add a timeout
 			if timeout <= 0:
 				return
 			else:
-				time.sleep(2.5)
+				time.sleep(0.5)
 				timeout -= 1
 				print 'Waiting for bars to load...'
 				hov.perform()
@@ -114,7 +113,7 @@ def process_data(data):
 
 
 # waits for AJAX bar graph to load, given # of tries and .3s delay between each
-def wait_for_load(root, x_path, plural=False, tries=30, sleep=5.5, index=0):
+def wait_for_load(root, x_path, plural=False, tries=30, sleep=2.5, index=0):
 	while tries > 0:
 		try:
 			if plural:
@@ -122,7 +121,7 @@ def wait_for_load(root, x_path, plural=False, tries=30, sleep=5.5, index=0):
 			else:
 				elem = root.find_element_by_xpath(x_path)
 			print 'finding graph'
-			print elem.text
+			print elem
 			if elem.is_displayed():
 				return elem
 		except:
@@ -145,10 +144,11 @@ def build_url(f, t, d, r):
 # extracts the departure date, adds the year
 def get_date(graph):
 	date = graph.find_elements_by_xpath('./*[last()-1]/*')[1].get_attribute('innerText')
-	if date == 'Loading...' or 'Your search did not match any of our flights.':
-
+	if date == 'Loading...':
 		return date
-	elif len(date) > 19:
+	elif date == 'Your search did not match any of our flights.':
+		return date
+	elif len(date) > 1:
 		current_month = datetime.now().month
 		year = datetime.now().year
 		if monthToNum(date.split()[1]) < current_month:
@@ -159,11 +159,8 @@ def get_date(graph):
 
 # converts date string from get_date() to unix timestamp
 def get_unix_timestamp(date_str):
-	stripped_date = date_str[0:11].rstrip()
-	print(stripped_date)
-	#time.sleep(0)
-	return calendar.timegm(datetime.strptime(stripped_date, '%a, %b %d').timetuple())
-    #return calendar.timegm(datetime.strptime(date_str, '%a, %b %d %Y').timetuple())
+	#date_str = date_str[0:11].rstrip()
+	return calendar.timegm(datetime.strptime(date_str, '%a, %b %d %Y').timetuple())
 
 
 # converts price string to int
@@ -189,3 +186,4 @@ def monthToNum(month):
 		'Dec': 12
 	}
 	return monthNum[month]
+
